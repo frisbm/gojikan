@@ -852,6 +852,16 @@ type AnimeNews struct {
 	} `json:"pagination,omitempty"`
 }
 
+// AnimeRelations Anime Relations
+type AnimeRelations struct {
+	Data *[]struct {
+		Entry *[]MalUrl `json:"entry,omitempty"`
+
+		// Relation Relation type
+		Relation *string `json:"relation,omitempty"`
+	} `json:"data,omitempty"`
+}
+
 // AnimeReview defines model for anime_review.
 type AnimeReview struct {
 	// Date Review created date ISO8601
@@ -1456,6 +1466,21 @@ type Daterange struct {
 
 	// To Date ISO8601
 	To *string `json:"to"`
+}
+
+// EntryMeta Entry Meta data
+type EntryMeta struct {
+	// ImageUrl Image URL
+	ImageUrl *string `json:"image_url,omitempty"`
+
+	// MalId MyAnimeList ID
+	MalId *int `json:"mal_id,omitempty"`
+
+	// Name Entry Name/Title
+	Name *string `json:"name,omitempty"`
+
+	// Url MyAnimeList URL
+	Url *string `json:"url,omitempty"`
 }
 
 // EntryRecommendations Entry Recommendations Resource
@@ -2315,6 +2340,13 @@ type PersonVoiceActingRoles struct {
 	} `json:"data,omitempty"`
 }
 
+// Pictures Pictures Resource
+type Pictures struct {
+	Data *[]struct {
+		Images *AnimeImages `json:"images,omitempty"`
+	} `json:"data,omitempty"`
+}
+
 // PicturesVariants Pictures Resource
 type PicturesVariants struct {
 	Data *[]struct {
@@ -2388,6 +2420,16 @@ type Producers struct {
 // ProducersQueryOrderby Producers Search Query Order By
 type ProducersQueryOrderby string
 
+// Random Random Resources
+type Random struct {
+	Data *[]Random_Data_Item `json:"data,omitempty"`
+}
+
+// Random_Data_Item defines model for random.data.Item.
+type Random_Data_Item struct {
+	union json.RawMessage
+}
+
 // Recommendations defines model for recommendations.
 type Recommendations struct {
 	Data *[]struct {
@@ -2423,6 +2465,16 @@ type Relation struct {
 	Relation *string `json:"relation,omitempty"`
 }
 
+// ReviewsCollection Anime & Manga Reviews Resource
+type ReviewsCollection struct {
+	Data *[]ReviewsCollection_Data_Item `json:"data,omitempty"`
+}
+
+// ReviewsCollection_Data_Item defines model for reviews_collection.data.Item.
+type ReviewsCollection_Data_Item struct {
+	union json.RawMessage
+}
+
 // Schedules defines model for schedules.
 type Schedules struct {
 	Data       *[]Anime `json:"data,omitempty"`
@@ -2448,6 +2500,14 @@ type Seasons struct {
 
 		// Year Year
 		Year *int `json:"year,omitempty"`
+	} `json:"data,omitempty"`
+}
+
+// StreamingLinks Streaming links
+type StreamingLinks struct {
+	Data *[]struct {
+		Name *string `json:"name,omitempty"`
+		Url  *string `json:"url,omitempty"`
 	} `json:"data,omitempty"`
 }
 
@@ -2932,6 +2992,137 @@ type UsersSearch struct {
 // UsersSearchQueryGender Users Search Query Gender.
 type UsersSearchQueryGender string
 
+// UsersTemp Transform the resource into an array.
+type UsersTemp struct {
+	Data *[]struct {
+		// About User About. NOTE: About information is customizable by users through BBCode on MyAnimeList. This means users can add multimedia content, different text sizes, etc. Due to this freeform, Jikan returns parsed HTML. Validate on your end!
+		About *string `json:"about,omitempty"`
+
+		// AnimeStats Anime Stats
+		AnimeStats *struct {
+			// Completed Anime Completed
+			Completed *int `json:"completed,omitempty"`
+
+			// DaysWatched Number of days spent watching Anime
+			DaysWatched *float32 `json:"days_watched,omitempty"`
+
+			// Dropped Anime Dropped
+			Dropped *int `json:"dropped,omitempty"`
+
+			// EpisodesWatched Number of Anime Episodes Watched
+			EpisodesWatched *int `json:"episodes_watched,omitempty"`
+
+			// MeanScore Mean Score
+			MeanScore *float32 `json:"mean_score,omitempty"`
+
+			// OnHold Anime On-Hold
+			OnHold *int `json:"on_hold,omitempty"`
+
+			// PlanToWatch Anime Planned to Watch
+			PlanToWatch *int `json:"plan_to_watch,omitempty"`
+
+			// Rewatched Anime re-watched
+			Rewatched *int `json:"rewatched,omitempty"`
+
+			// TotalEntries Total Anime entries on User list
+			TotalEntries *int `json:"total_entries,omitempty"`
+
+			// Watching Anime Watching
+			Watching *int `json:"watching,omitempty"`
+		} `json:"anime_stats,omitempty"`
+
+		// Birthday Birthday Date ISO8601
+		Birthday *string `json:"birthday,omitempty"`
+
+		// Favorites Favorite entries
+		Favorites *struct {
+			// Anime Favorite Anime
+			Anime *[]EntryMeta `json:"anime,omitempty"`
+
+			// Characters Favorite Characters
+			Characters *[]EntryMeta `json:"characters,omitempty"`
+
+			// Manga Favorite Manga
+			Manga *[]EntryMeta `json:"manga,omitempty"`
+
+			// People Favorite People
+			People *[]EntryMeta `json:"people,omitempty"`
+		} `json:"favorites,omitempty"`
+
+		// Gender User Gender
+		Gender *string `json:"gender,omitempty"`
+
+		// Images Images
+		Images *struct {
+			// Jpg Available images in JPG
+			Jpg *struct {
+				// ImageUrl Image URL JPG (225x335)
+				ImageUrl *string `json:"image_url,omitempty"`
+			} `json:"jpg,omitempty"`
+
+			// Webp Available images in WEBP
+			Webp *struct {
+				// ImageUrl Image URL WEBP (225x335)
+				ImageUrl *string `json:"image_url,omitempty"`
+			} `json:"webp,omitempty"`
+		} `json:"images,omitempty"`
+
+		// Joined Joined Date ISO8601
+		Joined *string `json:"joined,omitempty"`
+
+		// LastOnline Last Online Date ISO8601
+		LastOnline *string `json:"last_online,omitempty"`
+
+		// Location Location
+		Location *string `json:"location,omitempty"`
+
+		// MalId MyAnimeList ID
+		MalId *int `json:"mal_id,omitempty"`
+
+		// MangaStats Manga Stats
+		MangaStats *struct {
+			// ChaptersRead Number of Manga Chapters Read
+			ChaptersRead *int `json:"chapters_read,omitempty"`
+
+			// Completed Manga Completed
+			Completed *int `json:"completed,omitempty"`
+
+			// DaysRead Number of days spent reading Manga
+			DaysRead *float32 `json:"days_read,omitempty"`
+
+			// Dropped Manga Dropped
+			Dropped *int `json:"dropped,omitempty"`
+
+			// MeanScore Mean Score
+			MeanScore *float32 `json:"mean_score,omitempty"`
+
+			// OnHold Manga On-Hold
+			OnHold *int `json:"on_hold,omitempty"`
+
+			// PlanToRead Manga Planned to Read
+			PlanToRead *int `json:"plan_to_read,omitempty"`
+
+			// Reading Manga Reading
+			Reading *int `json:"reading,omitempty"`
+
+			// Reread Manga re-read
+			Reread *int `json:"reread,omitempty"`
+
+			// TotalEntries Total Manga entries on User list
+			TotalEntries *int `json:"total_entries,omitempty"`
+
+			// VolumesRead Number of Manga Volumes Read
+			VolumesRead *int `json:"volumes_read,omitempty"`
+		} `json:"manga_stats,omitempty"`
+
+		// Url MyAnimeList URL
+		Url *string `json:"url,omitempty"`
+
+		// Username MyAnimeList Username
+		Username *string `json:"username,omitempty"`
+	} `json:"data,omitempty"`
+}
+
 // WatchEpisodes defines model for watch_episodes.
 type WatchEpisodes struct {
 	Data *[]struct {
@@ -2978,6 +3169,9 @@ type WatchPromos struct {
 
 // Continuing defines model for continuing.
 type Continuing = bool
+
+// Kids defines model for kids.
+type Kids = bool
 
 // Limit defines model for limit.
 type Limit = int
@@ -3505,6 +3699,120 @@ func (t *EntryRecommendations_Data_Entry) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsAnime returns the union data inside the Random_Data_Item as a Anime
+func (t Random_Data_Item) AsAnime() (Anime, error) {
+	var body Anime
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAnime overwrites any union data inside the Random_Data_Item as the provided Anime
+func (t *Random_Data_Item) FromAnime(v Anime) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAnime performs a merge with any union data inside the Random_Data_Item, using the provided Anime
+func (t *Random_Data_Item) MergeAnime(v Anime) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsManga returns the union data inside the Random_Data_Item as a Manga
+func (t Random_Data_Item) AsManga() (Manga, error) {
+	var body Manga
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromManga overwrites any union data inside the Random_Data_Item as the provided Manga
+func (t *Random_Data_Item) FromManga(v Manga) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeManga performs a merge with any union data inside the Random_Data_Item, using the provided Manga
+func (t *Random_Data_Item) MergeManga(v Manga) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCharacter returns the union data inside the Random_Data_Item as a Character
+func (t Random_Data_Item) AsCharacter() (Character, error) {
+	var body Character
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCharacter overwrites any union data inside the Random_Data_Item as the provided Character
+func (t *Random_Data_Item) FromCharacter(v Character) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCharacter performs a merge with any union data inside the Random_Data_Item, using the provided Character
+func (t *Random_Data_Item) MergeCharacter(v Character) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsPerson returns the union data inside the Random_Data_Item as a Person
+func (t Random_Data_Item) AsPerson() (Person, error) {
+	var body Person
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromPerson overwrites any union data inside the Random_Data_Item as the provided Person
+func (t *Random_Data_Item) FromPerson(v Person) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergePerson performs a merge with any union data inside the Random_Data_Item, using the provided Person
+func (t *Random_Data_Item) MergePerson(v Person) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Random_Data_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Random_Data_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // AsAnimeMeta returns the union data inside the Recommendations_Data_Entry_Item as a AnimeMeta
 func (t Recommendations_Data_Entry_Item) AsAnimeMeta() (AnimeMeta, error) {
 	var body AnimeMeta
@@ -3563,6 +3871,68 @@ func (t Recommendations_Data_Entry_Item) MarshalJSON() ([]byte, error) {
 }
 
 func (t *Recommendations_Data_Entry_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsAnimeReview returns the union data inside the ReviewsCollection_Data_Item as a AnimeReview
+func (t ReviewsCollection_Data_Item) AsAnimeReview() (AnimeReview, error) {
+	var body AnimeReview
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromAnimeReview overwrites any union data inside the ReviewsCollection_Data_Item as the provided AnimeReview
+func (t *ReviewsCollection_Data_Item) FromAnimeReview(v AnimeReview) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeAnimeReview performs a merge with any union data inside the ReviewsCollection_Data_Item, using the provided AnimeReview
+func (t *ReviewsCollection_Data_Item) MergeAnimeReview(v AnimeReview) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsMangaReview returns the union data inside the ReviewsCollection_Data_Item as a MangaReview
+func (t ReviewsCollection_Data_Item) AsMangaReview() (MangaReview, error) {
+	var body MangaReview
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromMangaReview overwrites any union data inside the ReviewsCollection_Data_Item as the provided MangaReview
+func (t *ReviewsCollection_Data_Item) FromMangaReview(v MangaReview) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeMangaReview performs a merge with any union data inside the ReviewsCollection_Data_Item, using the provided MangaReview
+func (t *ReviewsCollection_Data_Item) MergeMangaReview(v MangaReview) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ReviewsCollection_Data_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ReviewsCollection_Data_Item) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
