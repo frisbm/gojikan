@@ -4,14 +4,12 @@ go 1.24.1
 
 tool github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
 
-require (
-	github.com/getkin/kin-openapi v0.131.0
-	github.com/oapi-codegen/runtime v1.1.1
-)
+require github.com/oapi-codegen/runtime v1.1.1
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
+	github.com/getkin/kin-openapi v0.131.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.1 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect

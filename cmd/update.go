@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const ApiDocUrl = "https://raw.githubusercontent.com/jikan-me/jikan-rest/master/storage/api-docs/api-docs.json"
+const apiDocUrl = "https://raw.githubusercontent.com/jikan-me/jikan-rest/master/storage/api-docs/api-docs.json"
 
 type specReplacement struct {
 	old string
@@ -112,7 +112,7 @@ func replaceInSpec(spec string, replacements []specReplacement) string {
 func pullSpec(ctx context.Context, buf io.Writer) (ferr error) {
 	client := httpClient()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ApiDocUrl, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiDocUrl, nil)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
