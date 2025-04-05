@@ -8,6 +8,7 @@ import (
 	"go/ast"
 	"go/format"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"io"
 	"log"
@@ -15,6 +16,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -46,6 +48,7 @@ func main() {
 	}
 	fmt.Println("Update process completed successfully.")
 }
+
 func update(ctx context.Context) (ferr error) {
 	var specBuffer bytes.Buffer
 	if err := pullSpec(ctx, &specBuffer); err != nil {
@@ -64,8 +67,15 @@ func update(ctx context.Context) (ferr error) {
 	if err := rewriteAst(); err != nil {
 		return fmt.Errorf("AST rewrite failed: %w", err)
 	}
+	if err := addStatusCodeErrorHandling(); err != nil {
+		return fmt.Errorf("AST rewrite (status code handling) failed: %w", err)
+	}
+	if err := fmtCode(); err != nil {
+		return fmt.Errorf("code formatting failed: %w", err)
+	}
 	return nil
 }
+
 func isAnonymousStructType(typeExpr ast.Expr) bool {
 	switch T := typeExpr.(type) {
 	case *ast.StructType:
@@ -92,6 +102,7 @@ func NewExtractionInfo() *ExtractionInfo {
 		GeneratedNames:           make(map[string]struct{}),
 	}
 }
+
 func capitalize(s string) string {
 	if s == "" {
 		return ""
@@ -100,6 +111,7 @@ func capitalize(s string) string {
 	r[0] = unicode.ToUpper(r[0])
 	return string(r)
 }
+
 func recursiveExtract(
 	typeExpr ast.Expr,
 	parentPath string,
@@ -173,6 +185,7 @@ func recursiveExtract(
 		return T
 	}
 }
+
 func pass2UpdateFunctions(parsedFile *ast.File, info *ExtractionInfo) {
 	ast.Inspect(parsedFile, func(node ast.Node) bool {
 		funcDecl, isFunc := node.(*ast.FuncDecl)
@@ -320,6 +333,7 @@ func pass2UpdateFunctions(parsedFile *ast.File, info *ExtractionInfo) {
 		return false
 	})
 }
+
 func rewriteAst() (err error) {
 	fset := token.NewFileSet()
 	parsedFile, err := parser.ParseFile(fset, outputFile, nil, 0)
@@ -392,12 +406,180 @@ func rewriteAst() (err error) {
 	}
 	return nil
 }
+
+func addStatusCodeErrorHandling() error {
+	fset := token.NewFileSet()
+	parsedFile, err := parser.ParseFile(fset, outputFile, nil, parser.ParseComments)
+	if err != nil {
+		return fmt.Errorf("failed to parse file '%s' for status code handling: %w", outputFile, err)
+	}
+	modified := false
+	ast.Inspect(parsedFile, func(node ast.Node) bool {
+		funcDecl, ok := node.(*ast.FuncDecl)
+		if !ok || funcDecl.Body == nil {
+			return true
+		}
+		funcName := funcDecl.Name.Name
+		if !strings.HasPrefix(funcName, "Parse") || !strings.HasSuffix(funcName, "Response") {
+			return true
+		}
+		var targetSwitch *ast.SwitchStmt
+		ast.Inspect(funcDecl.Body, func(n ast.Node) bool {
+			if sw, isSwitch := n.(*ast.SwitchStmt); isSwitch && sw.Tag == nil {
+				targetSwitch = sw
+				return false
+			}
+			return true
+		})
+		if targetSwitch == nil || targetSwitch.Body == nil {
+			return true
+		}
+		hasNonSuccessCase := false
+		successStatusCode := http.StatusOK
+		foundSuccessCase := false
+		for _, stmt := range targetSwitch.Body.List {
+			caseClause, isCase := stmt.(*ast.CaseClause)
+			if !isCase {
+				continue
+			}
+			if len(caseClause.List) == 0 {
+				hasNonSuccessCase = true
+				break
+			}
+			for _, expr := range caseClause.List {
+				if binExpr, isBin := expr.(*ast.BinaryExpr); isBin {
+					if binExpr.Op == token.EQL {
+						if selExpr, isSel := binExpr.X.(*ast.SelectorExpr); isSel {
+							if ident, isIdent := selExpr.X.(*ast.Ident); isIdent && ident.Name == "rsp" && selExpr.Sel.Name == "StatusCode" {
+								if lit, isLit := binExpr.Y.(*ast.BasicLit); isLit && lit.Kind == token.INT {
+									successStatusCode, err = strconv.Atoi(lit.Value)
+									if err == nil {
+										foundSuccessCase = true
+									}
+								}
+							}
+						}
+					}
+					if binExpr.Op == token.NEQ {
+						if selExpr, isSel := binExpr.X.(*ast.SelectorExpr); isSel {
+							if ident, isIdent := selExpr.X.(*ast.Ident); isIdent && ident.Name == "rsp" && selExpr.Sel.Name == "StatusCode" {
+								hasNonSuccessCase = true
+								break
+							}
+						}
+					}
+				}
+				if binExpr, isBin := expr.(*ast.BinaryExpr); isBin && binExpr.Op == token.LAND {
+					operands := []ast.Expr{binExpr.X, binExpr.Y}
+					for _, operand := range operands {
+						if innerBinExpr, innerIsBin := operand.(*ast.BinaryExpr); innerIsBin && innerBinExpr.Op == token.EQL {
+							if selExpr, isSel := innerBinExpr.X.(*ast.SelectorExpr); isSel {
+								if ident, isIdent := selExpr.X.(*ast.Ident); isIdent && ident.Name == "rsp" && selExpr.Sel.Name == "StatusCode" {
+									if lit, isLit := innerBinExpr.Y.(*ast.BasicLit); isLit && lit.Kind == token.INT {
+										successStatusCode, err = strconv.Atoi(lit.Value)
+										if err == nil {
+											foundSuccessCase = true
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			if hasNonSuccessCase {
+				break
+			}
+		}
+		if !hasNonSuccessCase && foundSuccessCase {
+			newCase := &ast.CaseClause{
+				List: []ast.Expr{
+					&ast.BinaryExpr{
+						X: &ast.SelectorExpr{
+							X:   ast.NewIdent("rsp"),
+							Sel: ast.NewIdent("StatusCode"),
+						},
+						Op: token.NEQ,
+						Y: &ast.BasicLit{
+							Kind:  token.INT,
+							Value: strconv.Itoa(successStatusCode),
+						},
+					},
+				},
+				Body: []ast.Stmt{
+					&ast.ReturnStmt{
+						Results: []ast.Expr{
+							ast.NewIdent("nil"),
+							&ast.CallExpr{
+								Fun: &ast.SelectorExpr{
+									X:   ast.NewIdent("fmt"),
+									Sel: ast.NewIdent("Errorf"),
+								},
+								Args: []ast.Expr{
+									&ast.BasicLit{
+										Kind:  token.STRING,
+										Value: `"unexpected status code: %d"`,
+									},
+									&ast.SelectorExpr{
+										X:   ast.NewIdent("rsp"),
+										Sel: ast.NewIdent("StatusCode"),
+									},
+								},
+							},
+						},
+					},
+				},
+			}
+			insertPos := len(targetSwitch.Body.List)
+			for i, stmt := range targetSwitch.Body.List {
+				if caseClause, isCase := stmt.(*ast.CaseClause); isCase && len(caseClause.List) == 0 {
+					insertPos = i
+					break
+				}
+			}
+			targetSwitch.Body.List = append(targetSwitch.Body.List[:insertPos], append([]ast.Stmt{newCase}, targetSwitch.Body.List[insertPos:]...)...)
+			modified = true
+		}
+		return false
+	})
+	if modified {
+		var buf bytes.Buffer
+		cfg := printer.Config{Mode: printer.TabIndent | printer.UseSpaces, Tabwidth: 8}
+		err = cfg.Fprint(&buf, fset, parsedFile)
+		if err != nil {
+			buf.Reset()
+			err = format.Node(&buf, fset, parsedFile)
+		}
+		if err != nil {
+			return fmt.Errorf("failed to format rewritten code for status handling: %w", err)
+		}
+		err = os.WriteFile(outputFile, buf.Bytes(), 0644)
+		if err != nil {
+			return fmt.Errorf("failed to write modified file '%s' after status handling: %w", outputFile, err)
+		}
+		fmt.Printf("Successfully added status code error handling to %s.\n", outputFile)
+	} else {
+		fmt.Println("No changes required for status code error handling.")
+	}
+	return nil
+}
+
 func fmtCode() (ferr error) {
+	fileContents, err := os.ReadFile(outputFile)
+	if err != nil {
+		return fmt.Errorf("failed to read file '%s': %w", outputFile, err)
+	}
+	minified := strings.ReplaceAll(string(fileContents), "\n\n", "\n")
+	err = os.WriteFile(outputFile, []byte(minified), 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write modified file '%s' after minifying: %w", outputFile, err)
+	}
+
 	cmd := exec.Command("make", "fmt")
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		errMsg := fmt.Sprintf("'make fmt' failed with error: %v", err)
 		if stderrStr := stderr.String(); stderrStr != "" {
@@ -407,6 +589,7 @@ func fmtCode() (ferr error) {
 	}
 	return nil
 }
+
 func generate() (ferr error) {
 	cmd := exec.Command("go", "generate", "./...")
 	var stdout, stderr bytes.Buffer
@@ -422,12 +605,14 @@ func generate() (ferr error) {
 	}
 	return nil
 }
+
 func writeSpec(spec string) (ferr error) {
 	if err := os.WriteFile(specPath, []byte(spec), 0644); err != nil {
 		return fmt.Errorf("failed to write spec file '%s': %w", specPath, err)
 	}
 	return nil
 }
+
 func replaceInSpec(spec string, replacements []specReplacement) string {
 	result := spec
 	for _, replacement := range replacements {
@@ -435,6 +620,7 @@ func replaceInSpec(spec string, replacements []specReplacement) string {
 	}
 	return result
 }
+
 func pullSpec(ctx context.Context, buf io.Writer) (ferr error) {
 	client := httpClient()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiDocUrl, nil)
@@ -464,6 +650,7 @@ func pullSpec(ctx context.Context, buf io.Writer) (ferr error) {
 	}
 	return nil
 }
+
 func httpClient() *http.Client {
 	transport := &http.Transport{
 		DialContext: (&net.Dialer{
