@@ -3,7 +3,6 @@ package gojikan
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -141,7 +140,7 @@ func TestClient_GetAnimeById(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c, err := New(WithCache(10 * time.Minute))
+			c, err := New()
 			require.NoError(t, err)
 			ctx := context.Background()
 			got, err := c.GetAnimeFullById(ctx, tt.id)
