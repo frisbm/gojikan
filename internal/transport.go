@@ -21,25 +21,25 @@ type cachedResponse struct {
 
 // CachingTransport is an http.RoundTripper that adds caching for GET requests.
 type CachingTransport struct {
-	originalTransport http.RoundTripper
-	cache             map[string]cachedResponse
-	cacheMutex        sync.RWMutex
-	ttl               time.Duration
+	t          http.RoundTripper
+	cache      map[string]cachedResponse
+	cacheMutex sync.RWMutex
+	ttl        time.Duration
 }
 
 // NewCachingTransport creates a new CachingTransport.
 func NewCachingTransport(transport http.RoundTripper, ttl time.Duration) *CachingTransport {
 	return &CachingTransport{
-		originalTransport: transport,
-		cache:             make(map[string]cachedResponse),
-		ttl:               ttl,
+		t:     transport,
+		cache: make(map[string]cachedResponse),
+		ttl:   ttl,
 	}
 }
 
 // RoundTrip executes a single HTTP transaction, possibly returning a cached response.
 func (ct *CachingTransport) RoundTrip(req *http.Request) (resp *http.Response, ferr error) {
 	if req.Method != http.MethodGet {
-		return ct.originalTransport.RoundTrip(req)
+		return ct.t.RoundTrip(req)
 	}
 	cacheKey := req.URL.String()
 
@@ -61,7 +61,7 @@ func (ct *CachingTransport) RoundTrip(req *http.Request) (resp *http.Response, f
 		return response, nil
 	}
 
-	resp, err := ct.originalTransport.RoundTrip(req)
+	resp, err := ct.t.RoundTrip(req)
 	if err != nil {
 		return nil, fmt.Errorf("error in RoundTrip: %w", err)
 	}
