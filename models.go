@@ -1,6 +1,8 @@
 package gojikan
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -13,6 +15,46 @@ type ErrorResponse struct {
 	Message   string `json:"message"`
 	ApiError  string `json:"error"`
 	ReportUrl string `json:"report_url"`
+}
+
+func (e *ErrorResponse) UnmarshalJSON(data []byte) error {
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	// sometimes status is a string, so we need to trim the quotes
+	if status, ok := raw["status"]; ok {
+		if err := json.Unmarshal(bytes.Trim(status, "\""), &e.Status); err != nil {
+			return err
+		}
+	}
+
+	if typ, ok := raw["type"]; ok {
+		if err := json.Unmarshal(typ, &e.Type); err != nil {
+			return err
+		}
+	}
+
+	if message, ok := raw["message"]; ok {
+		if err := json.Unmarshal(message, &e.Message); err != nil {
+			return err
+		}
+	}
+
+	if apiError, ok := raw["error"]; ok {
+		if err := json.Unmarshal(apiError, &e.ApiError); err != nil {
+			return err
+		}
+	}
+
+	if reportUrl, ok := raw["report_url"]; ok {
+		if err := json.Unmarshal(reportUrl, &e.ReportUrl); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Error implements the error interface for ErrorResponse.

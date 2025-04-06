@@ -131,3 +131,55 @@ type AnimeFull struct {
 	External       []AnimeFullExternal  `json:"external,omitempty"`
 	Streaming      []AnimeFullExternal  `json:"streaming,omitempty"`
 }
+
+type AnimeCharactersData struct {
+	Character *AnimeCharactersCharacter `json:"character,omitempty"`
+	// Character's Role
+	Role        string                       `json:"role,omitempty"`
+	VoiceActors []AnimeCharactersVoiceActors `json:"voice_actors,omitempty"`
+}
+
+type AnimeCharactersCharacter struct {
+	// MyAnimeList ID
+	MalId int32 `json:"mal_id,omitempty"`
+	// MyAnimeList URL
+	Url    string           `json:"url,omitempty"`
+	Images *CharacterImages `json:"images,omitempty"`
+	// Character Name
+	Name string `json:"name,omitempty"`
+}
+
+type AnimeCharactersVoiceActors struct {
+	Person   *AnimeCharactersPerson `json:"person,omitempty"`
+	Language string                 `json:"language,omitempty"`
+}
+
+type AnimeCharactersPerson struct {
+	MalId  int32         `json:"mal_id,omitempty"`
+	Url    string        `json:"url,omitempty"`
+	Images *PeopleImages `json:"images,omitempty"`
+	Name   string        `json:"name,omitempty"`
+}
+
+type CharacterImages struct {
+	Jpg  *CharacterImagesJpg  `json:"jpg,omitempty"`
+	Webp *CharacterImagesWebp `json:"webp,omitempty"`
+}
+
+type CharacterImagesJpg struct {
+	// Image URL JPG
+	ImageUrl string `json:"image_url,omitempty"`
+	// Small Image URL JPG
+	SmallImageUrl string `json:"small_image_url,omitempty"`
+}
+
+type CharacterImagesWebp struct {
+	// Image URL WEBP
+	ImageUrl string `json:"image_url,omitempty"`
+	// Small Image URL WEBP
+	SmallImageUrl string `json:"small_image_url,omitempty"`
+}
+
+type PeopleImages struct {
+	Jpg *Jpg `json:"jpg,omitempty"`
+}

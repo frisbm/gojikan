@@ -38,3 +38,70 @@ func (c *Client) GetAnimeById(ctx context.Context, id int) (Anime, error) {
 	}
 	return resp.Data, nil
 }
+
+func (c *Client) GetAnimeCharacters(ctx context.Context, id int) ([]AnimeCharactersData, error) {
+	pathParams := map[string]any{
+		"id": id,
+	}
+	queryParams := map[string][]any{}
+	url, err := internal.BuildUrl(c.baseURL, getAnimeCharactersPath, pathParams, queryParams)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build url: %w", err)
+	}
+	resp, err := get[Response[[]AnimeCharactersData]](ctx, c, url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get anime characters: %w", err)
+	}
+	return resp.Data, nil
+}
+func (c *Client) GetAnimeStaff(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeEpisodes(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeEpisodeById(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeNews(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeForum(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeVideos(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeVideosEpisodes(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimePictures(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeStatistics(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeMoreInfo(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeRecommendations(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeUserUpdates(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeReviews(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeRelations(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeThemes(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeExternal(ctx context.Context) (any, error) {
+	return nil, nil
+}
+func (c *Client) GetAnimeStreaming(ctx context.Context) (any, error) {
+	return nil, nil
+}
