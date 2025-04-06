@@ -41,13 +41,14 @@ func BuildUrl(baseUrl string, path string, pathParams map[string]any, queryParam
 			}
 			if len(values) == 1 {
 				param := marshalParam(values[0])
-				if param == "true" {
+				switch param {
+				case "true":
 					sb.WriteString(key)
-				} else if param == "false" {
+				case "false":
 					// do nothing
 					sb.WriteString("")
-				} else {
-					sb.WriteString(fmt.Sprintf("%s=%v", key, param))
+				default:
+					sb.WriteString(fmt.Sprintf("%s=%s", key, param))
 				}
 			}
 			if len(values) > 1 {

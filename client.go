@@ -1,4 +1,4 @@
-package client
+package gojikan
 
 import (
 	"context"
@@ -10,8 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/frisbm/gojikan"
-	"github.com/frisbm/gojikan/client/internal"
+	"github.com/frisbm/gojikan/internal"
 )
 
 type Client struct {
@@ -42,10 +41,10 @@ func New(opts ...ClientOption) (*Client, error) {
 type ClientOption func(c *Client)
 
 // WithCache returns a ClientOption that enables caching for the client.
-func WithCache(ttl *time.Duration) ClientOption {
+func WithCache(ttl time.Duration) ClientOption {
 	return func(c *Client) {
 		c.withcache = true
-		c.ttl = ttl
+		c.ttl = &ttl
 	}
 }
 
@@ -92,7 +91,7 @@ func get[T any](ctx context.Context, c *Client, url string) (t T, ferr error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		errResponse := gojikan.ErrorResponse{}
+		errResponse := ErrorResponse{}
 		err = json.Unmarshal(body, &errResponse)
 		if err != nil {
 			return zero, fmt.Errorf("unmarshalling response body: %w for status code: %d", err, resp.StatusCode)
