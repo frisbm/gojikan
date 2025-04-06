@@ -4,12 +4,6 @@
 help:
 	@grep -o '^\#.*' Makefile | cut -d" " -f2-
 
-.PHONY: update
-# update:
-#    Update spec and generate code
-update:
-	go run ./cmd/update.go
-
 .PHONY: fmt
 # fmt:
 #    Format go code
@@ -29,9 +23,9 @@ test:
 	go test -v ./...
 
 
-.PHONY: update-deps
-# update-deps:
-#    Update dependencies
-update-deps:
+.PHONY: upgrade
+# upgrade:
+#    Upgrade dependencies
+upgrade:
 	go get -u -t ./...
 	go mod tidy
