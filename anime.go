@@ -7,10 +7,6 @@ import (
 	"github.com/frisbm/gojikan/internal"
 )
 
-type getAnimeFullByIdResponse struct {
-	Data AnimeFull `json:"data"`
-}
-
 func (c *Client) GetAnimeFullById(ctx context.Context, id int) (AnimeFull, error) {
 	pathParams := map[string]any{
 		"id": id,
@@ -20,15 +16,11 @@ func (c *Client) GetAnimeFullById(ctx context.Context, id int) (AnimeFull, error
 	if err != nil {
 		return AnimeFull{}, fmt.Errorf("failed to build url: %w", err)
 	}
-	resp, err := get[getAnimeFullByIdResponse](ctx, c, url)
+	resp, err := get[Response[AnimeFull]](ctx, c, url)
 	if err != nil {
 		return AnimeFull{}, fmt.Errorf("failed to get anime full by id: %w", err)
 	}
 	return resp.Data, nil
-}
-
-type getAnimeByIdResponse struct {
-	Data Anime `json:"data"`
 }
 
 func (c *Client) GetAnimeById(ctx context.Context, id int) (Anime, error) {
@@ -40,7 +32,7 @@ func (c *Client) GetAnimeById(ctx context.Context, id int) (Anime, error) {
 	if err != nil {
 		return Anime{}, fmt.Errorf("failed to build url: %w", err)
 	}
-	resp, err := get[getAnimeByIdResponse](ctx, c, url)
+	resp, err := get[Response[Anime]](ctx, c, url)
 	if err != nil {
 		return Anime{}, fmt.Errorf("failed to get anime by id: %w", err)
 	}

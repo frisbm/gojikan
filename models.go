@@ -45,6 +45,11 @@ func (e *ErrorResponse) Is(target error) bool {
 	return e.Status == t.Status && e.Type == t.Type && e.Message == t.Message && e.ApiError == t.ApiError
 }
 
+type Response[T any] struct {
+	Data       T           `json:"data,omitempty"`
+	Pagination *Pagination `json:"pagination,omitempty"`
+}
+
 // Pagination represents the pagination information in the API response.
 type Pagination struct {
 	LastVisiblePage int  `json:"last_visible_page"`
