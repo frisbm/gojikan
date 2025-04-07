@@ -10,26 +10,32 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/time/rate"
+
 	"github.com/frisbm/gojikan/internal"
 )
 
 type Client struct {
 	c         *http.Client
 	baseURL   string
-	withcache bool
+	withCache bool
 	ttl       *time.Duration
+
+	rateLimit *rate.Limiter
 }
 
 func New(opts ...ClientOption) (*Client, error) {
 	c := &Client{}
+
 	for _, opt := range opts {
 		opt(c)
 	}
-	if c.c != nil && c.withcache {
+
+	if c.c != nil && c.withCache {
 		return nil, errors.New("cache option can only be used once")
 	}
 	if c.c == nil {
-		c.c = internal.HttpClient(c.withcache, c.ttl)
+		c.c = internal.HttpClient(c.withCache, c.ttl)
 	}
 	if c.baseURL == "" {
 		c.baseURL = "https://api.jikan.moe/v4"
@@ -43,7 +49,7 @@ type ClientOption func(c *Client)
 // WithCache returns a ClientOption that enables caching for the client.
 func WithCache(ttl time.Duration) ClientOption {
 	return func(c *Client) {
-		c.withcache = true
+		c.withCache = true
 		c.ttl = &ttl
 	}
 }
@@ -63,14 +69,29 @@ func WithBaseURL(baseUrl string) ClientOption {
 	}
 }
 
+func WithRateLimit(limit, burst int) ClientOption {
+	return func(c *Client) {
+		if limit <= 0 {
+			return
+		}
+		c.rateLimit = rate.NewLimiter(rate.Limit(limit), burst)
+	}
+}
+
 func get[T any](ctx context.Context, c *Client, url string) (t T, ferr error) {
 	zero := *new(T)
+
+	if c.rateLimit != nil {
+		if err := c.rateLimit.Wait(ctx); err != nil {
+			return zero, fmt.Errorf("rate limit: %w", err)
+		}
+	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return zero, fmt.Errorf("create request: %w", err)
 	}
 
-	// Set the request headers
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Content-Type", "application/json")
 
