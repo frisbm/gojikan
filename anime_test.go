@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
 
 var testClient = func() *Client {
-	client, err := New(WithRateLimit(1, 1))
+	client, err := New(WithRateLimit(1, time.Second, 1))
 	if err != nil {
 		panic(fmt.Errorf("create client: %w", err))
 	}

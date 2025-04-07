@@ -69,12 +69,24 @@ func WithBaseURL(baseUrl string) ClientOption {
 	}
 }
 
-func WithRateLimit(limit, burst int) ClientOption {
+// WithRateLimit sets a rate limiter on the client. It allows specifying the maximum number
+// of requests (`requests`) allowed within a given time `interval`. The `burst` parameter
+// specifies the maximum number of tokens that can be initially available or accumulated,
+// allowing for short bursts exceeding the average rate.
+func WithRateLimit(requests float64, interval time.Duration, burst int) ClientOption {
 	return func(c *Client) {
-		if limit <= 0 {
+		if requests <= 0 || interval <= 0 {
 			return
 		}
-		c.rateLimit = rate.NewLimiter(rate.Limit(limit), burst)
+		effectiveBurst := burst
+		if effectiveBurst <= 0 {
+			effectiveBurst = int(requests)
+			if effectiveBurst < 1 {
+				effectiveBurst = 1
+			}
+		}
+
+		c.rateLimit = rate.NewLimiter(rate.Limit(requests/interval.Seconds()), effectiveBurst)
 	}
 }
 
