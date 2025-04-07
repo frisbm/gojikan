@@ -132,7 +132,7 @@ type AnimeFull struct {
 	Streaming      []AnimeFullExternal  `json:"streaming,omitempty"`
 }
 
-type AnimeCharactersData struct {
+type AnimeCharacters struct {
 	Character *AnimeCharactersCharacter `json:"character,omitempty"`
 	// Character's Role
 	Role        string                       `json:"role,omitempty"`
@@ -182,4 +182,20 @@ type CharacterImagesWebp struct {
 
 type PeopleImages struct {
 	Jpg *Jpg `json:"jpg,omitempty"`
+}
+
+type AnimeStaff struct {
+	Person *AnimeStaffPerson `json:"person,omitempty"`
+	// Staff Positions
+	Positions []string `json:"positions,omitempty"`
+}
+
+type AnimeStaffPerson struct {
+	// MyAnimeList ID
+	MalId int32 `json:"mal_id,omitempty"`
+	// MyAnimeList URL
+	Url    string        `json:"url,omitempty"`
+	Images *PeopleImages `json:"images,omitempty"`
+	// Name
+	Name string `json:"name,omitempty"`
 }

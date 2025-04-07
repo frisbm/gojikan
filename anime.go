@@ -39,7 +39,7 @@ func (c *Client) GetAnimeById(ctx context.Context, id int) (Anime, error) {
 	return resp.Data, nil
 }
 
-func (c *Client) GetAnimeCharacters(ctx context.Context, id int) ([]AnimeCharactersData, error) {
+func (c *Client) GetAnimeCharacters(ctx context.Context, id int) ([]AnimeCharacters, error) {
 	pathParams := map[string]any{
 		"id": id,
 	}
@@ -48,14 +48,26 @@ func (c *Client) GetAnimeCharacters(ctx context.Context, id int) ([]AnimeCharact
 	if err != nil {
 		return nil, fmt.Errorf("failed to build url: %w", err)
 	}
-	resp, err := get[Response[[]AnimeCharactersData]](ctx, c, url)
+	resp, err := get[Response[[]AnimeCharacters]](ctx, c, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get anime characters: %w", err)
 	}
 	return resp.Data, nil
 }
-func (c *Client) GetAnimeStaff(ctx context.Context) (any, error) {
-	return nil, nil
+func (c *Client) GetAnimeStaff(ctx context.Context, id int) ([]AnimeStaff, error) {
+	pathParams := map[string]any{
+		"id": id,
+	}
+	queryParams := map[string][]any{}
+	url, err := internal.BuildUrl(c.baseURL, getAnimeStaffPath, pathParams, queryParams)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build url: %w", err)
+	}
+	resp, err := get[Response[[]AnimeStaff]](ctx, c, url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get anime staff: %w", err)
+	}
+	return resp.Data, nil
 }
 func (c *Client) GetAnimeEpisodes(ctx context.Context) (any, error) {
 	return nil, nil

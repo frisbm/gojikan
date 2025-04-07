@@ -606,14 +606,14 @@ func TestClient_GetAnimeCharacters(t *testing.T) {
 		name    string
 		id      int
 		wantLen int
-		want    AnimeCharactersData
+		want    AnimeCharacters
 		wantErr error
 	}{
 		{
 			name:    "success - Steins;Gate",
 			id:      9253,
 			wantLen: 24,
-			want: AnimeCharactersData{
+			want: AnimeCharacters{
 				Character: &AnimeCharactersCharacter{
 					MalId: 35258,
 					Url:   "https://myanimelist.net/character/35258/Itaru_Hashida",
@@ -772,6 +772,66 @@ func TestClient_GetAnimeCharacters(t *testing.T) {
 			require.NoError(t, err)
 			ctx := context.Background()
 			got, err := c.GetAnimeCharacters(ctx, tt.id)
+			if err != nil {
+				require.NotNil(t, tt.wantErr, "unexpected error: %v", err)
+				require.ErrorIs(t, err, tt.wantErr)
+				return
+			}
+			require.Nil(t, tt.wantErr, "expected no error")
+			require.Equal(t, tt.wantLen, len(got))
+			require.Equal(t, tt.want, got[0])
+		})
+	}
+}
+
+func TestClient_GetAnimeStaff(t *testing.T) {
+	tests := []struct {
+		name    string
+		id      int
+		wantLen int
+		want    AnimeStaff
+		wantErr error
+	}{
+		{
+			name:    "success - Steins;Gate",
+			id:      9253,
+			wantLen: 160,
+			want: AnimeStaff{
+				Person: &AnimeStaffPerson{
+					MalId: 203,
+					Url:   "https://myanimelist.net/people/203/Justin_Cook",
+					Images: &PeopleImages{
+						Jpg: &Jpg{
+							ImageUrl:      "https://cdn.myanimelist.net/images/voiceactors/1/80501.jpg?s=ee808f428c434aee43fe003623f6bf0b",
+							SmallImageUrl: "",
+							LargeImageUrl: "",
+						},
+					},
+					Name: "Cook, Justin",
+				},
+				Positions: []string{
+					"Producer",
+				},
+			},
+		},
+		{
+			name: "error - not found",
+			id:   2,
+			wantErr: &ErrorResponse{
+				Status:    404,
+				Type:      "BadResponseException",
+				Message:   "Resource does not exist",
+				ApiError:  "404 on https://myanimelist.net/anime/2/_/stagg",
+				ReportUrl: "",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c, err := New()
+			require.NoError(t, err)
+			ctx := context.Background()
+			got, err := c.GetAnimeStaff(ctx, tt.id)
 			if err != nil {
 				require.NotNil(t, tt.wantErr, "unexpected error: %v", err)
 				require.ErrorIs(t, err, tt.wantErr)
